@@ -38,11 +38,9 @@ class PersonsViewModel @Inject constructor(
 
     fun event(event: PersonsEvent) {
         when (event) {
-
             is PersonsEvent.LoadPersons -> {
                 loadPersons()
             }
-
             is PersonsEvent.Search -> {
                 viewModelScope.launch(dispatcher) {
                     val result = searchPersonUseCase(event.query)
@@ -54,10 +52,9 @@ class PersonsViewModel @Inject constructor(
                     )
                 }
             }
-
-//            is PersonsEvent.SelectPerson -> {
-//                val person = event.person
-//            }
+            is PersonsEvent.SelectPerson -> {
+                val person = event.person
+            }
         }
     }
 

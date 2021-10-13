@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -43,6 +45,7 @@ fun PersonsScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         SearchBarItem(
+            modifier = Modifier.semantics { contentDescription = "Searchbar" },
             onTextChanged = { textFiledValue ->
                 /*
                  * This is not optimize that create event per user input,
@@ -128,7 +131,9 @@ private fun LoadingView() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        CircularProgressIndicator()
+        CircularProgressIndicator(
+            modifier = Modifier.semantics { contentDescription = "Loading" }
+        )
     }
 }
 
@@ -161,7 +166,11 @@ private fun PersonListView(
     personsState: PersonsState,
     onPersonClicked: (Person) -> Unit
 ) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .semantics { contentDescription = "PersonList" }
+    ) {
         items(personsState.persons) {
             PersonItem(person = it, onPersonClicked = onPersonClicked)
             Divider(
