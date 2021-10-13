@@ -1,13 +1,13 @@
 package com.milkyhead.app.androidtriesearchsample.domain.usecase
 
 
-import com.google.common.truth.Truth.assertThat
-import com.milkyhead.app.androidtriesearchsample.data.repository.FakePersonRepository
-import com.milkyhead.app.androidtriesearchsample.domain.model.Person
 import com.milkyhead.app.androidtriesearchsample.domain.repository.PersonRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.verify
+import org.mockito.kotlin.times
 
 
 class GetAllPersonUseCaseTest {
@@ -18,19 +18,13 @@ class GetAllPersonUseCaseTest {
 
     @Before
     fun setUp() {
-        personRepository = FakePersonRepository()
+        personRepository = Mockito.mock(PersonRepository::class.java)
         getAllPersonUseCase = GetAllPersonUseCase(personRepository)
     }
 
     @Test
-    fun `get all data must return all data`(): Unit = runBlocking {
-        personRepository.insert(getPersonList())
-        assertThat(getAllPersonUseCase()).hasSize(2)
+    fun `get all must call repository get all succeed`(): Unit = runBlocking {
+        getAllPersonUseCase()
+        verify(personRepository, times(1)).getAll()
     }
-
-    private fun getPersonList() = arrayListOf(
-        Person("Tito", "Kling", 26),
-        Person("Karina", "Goldner", 21),
-    )
-
 }

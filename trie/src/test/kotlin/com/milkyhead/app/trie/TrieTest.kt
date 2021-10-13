@@ -7,7 +7,7 @@ import org.junit.Test
 
 class TrieTest {
 
-    private val trie: Trie<Person> = Trie()
+    private val trie: DefaultTrie<Person> = DefaultTrie()
 
     @Before
     fun setup() {

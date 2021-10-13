@@ -8,6 +8,12 @@ import com.milkyhead.app.trie.Trie
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doNothing
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
+
 
 class DefaultPersonRepositoryTest {
 
@@ -17,57 +23,60 @@ class DefaultPersonRepositoryTest {
 
     @Before
     fun setUp() {
-        trie = Trie()
+        trie = Mockito.mock(Trie::class.java) as Trie<Person>
         personRepository = DefaultPersonRepository(trie)
     }
 
     @Test
-    fun `insert persons list to trie must succeed`(): Unit = runBlocking {
-        personRepository.insert(
+    fun `insert persons list must return true`(): Unit = runBlocking {
+        Mockito.`when`(trie.insert(any())).thenReturn(true)
+
+        val result = personRepository.insert(
             arrayListOf(
                 Person("Tito", "Kling", 26),
                 Person("Karina", "Goldner", 21),
             )
         )
 
-        assertThat(trie.length()).isEqualTo(2)
+        assertThat(result).isTrue()
     }
 
     @Test
-    fun `search persons in trie must succeed`(): Unit = runBlocking {
-        personRepository.insert(
+    fun `search persons in must return not empty`(): Unit = runBlocking {
+        Mockito.`when`(trie.search("t")).thenReturn(
             arrayListOf(
-                Person("Tito", "Kling", 26),
-                Person("Karina", "Goldner", 21),
+                Person("Tito", "Kling", 26)
             )
         )
-
-        assertThat(personRepository.search("t")).isEqualTo(trie.search("t"))
+        assertThat(personRepository.search("t")).isEqualTo(
+            arrayListOf(Person("Tito", "Kling", 26))
+        )
     }
 
     @Test
-    fun `get all persons in trie must succeed`(): Unit = runBlocking {
-        personRepository.insert(
+    fun `get all persons must return not empty`(): Unit = runBlocking {
+        Mockito.`when`(trie.all()).thenReturn(
             arrayListOf(
                 Person("Tito", "Kling", 26),
                 Person("Karina", "Goldner", 21),
             )
         )
 
-        assertThat(personRepository.getAll()).isEqualTo(trie.all())
+        assertThat(personRepository.getAll()).isEqualTo(
+            arrayListOf(
+                Person("Tito", "Kling", 26),
+                Person("Karina", "Goldner", 21),
+            )
+        )
     }
 
     @Test
-    fun `clear persons in trie must succeed`(): Unit = runBlocking {
-        personRepository.insert(
-            arrayListOf(
-                Person("Tito", "Kling", 26),
-                Person("Karina", "Goldner", 21),
-            )
-        )
+    fun `clear persons must succeed`(): Unit = runBlocking {
+        doNothing().`when`(trie).clear()
 
         personRepository.clear()
-        assertThat(trie.length()).isEqualTo(0)
+
+        verify(trie, times(1)).clear()
     }
 
 }

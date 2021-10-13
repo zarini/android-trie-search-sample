@@ -2,8 +2,6 @@ package com.milkyhead.app.androidtriesearchsample.ui
 
 import com.google.common.truth.Truth.assertThat
 import com.milkyhead.app.androidtriesearchsample.CoroutineDispatchersRule
-import com.milkyhead.app.androidtriesearchsample.data.repository.FakePersonLoaderRepository
-import com.milkyhead.app.androidtriesearchsample.data.repository.FakePersonRepository
 import com.milkyhead.app.androidtriesearchsample.domain.model.Person
 import com.milkyhead.app.androidtriesearchsample.domain.repository.PersonLoaderRepository
 import com.milkyhead.app.androidtriesearchsample.domain.repository.PersonRepository
@@ -14,17 +12,24 @@ import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.mockito.Mockito
+import org.mockito.Mockito.`when`
+import org.mockito.kotlin.any
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 @ExperimentalCoroutinesApi
 class PersonsViewModelTest {
 
     private lateinit var personLoaderRepository: PersonLoaderRepository
     private lateinit var personRepository: PersonRepository
+
     private lateinit var loadPersonsUseCase: LoadPersonsUseCase
     private lateinit var clearAllUseCase: ClearAllUseCase
     private lateinit var getAllPersonUseCase: GetAllPersonUseCase
     private lateinit var insertPersonsUseCase: InsertPersonsUseCase
     private lateinit var searchPersonUseCase: SearchPersonUseCase
+
     private lateinit var personsViewModel: PersonsViewModel
 
     @get:Rule
@@ -33,13 +38,15 @@ class PersonsViewModelTest {
 
     @Before
     fun setUp() {
-        personLoaderRepository = FakePersonLoaderRepository()
-        personRepository = FakePersonRepository()
+        personLoaderRepository = Mockito.mock(PersonLoaderRepository::class.java)
+        personRepository = Mockito.mock(PersonRepository::class.java)
+
         loadPersonsUseCase = LoadPersonsUseCase(personLoaderRepository)
         clearAllUseCase = ClearAllUseCase(personRepository)
         getAllPersonUseCase = GetAllPersonUseCase(personRepository)
         insertPersonsUseCase = InsertPersonsUseCase(personRepository)
         searchPersonUseCase = SearchPersonUseCase(personRepository)
+
         personsViewModel = PersonsViewModel(
             loadPersonsUseCase,
             insertPersonsUseCase,
@@ -51,26 +58,43 @@ class PersonsViewModelTest {
     }
 
     @Test
-    fun load_persons_on_start_view_model(): Unit = coroutineRule.runBlockingTest {
+    fun `load person on start view model must succeed`(): Unit = coroutineRule.runBlockingTest {
+
+        val data = arrayListOf(
+            Person("Tito", "Kling", 26),
+            Person("Karina", "Goldner", 21),
+        )
+
+        `when`(personLoaderRepository.load()).thenReturn(data)
+
+        `when`(personRepository.insert(any())).thenReturn(true)
+
+        `when`(personRepository.getAll()).thenReturn(data)
 
         personsViewModel.onStart()
-        val result = getAllPersonUseCase()
 
-        assertThat(personsViewModel.state.value.persons.size).isEqualTo(result.size)
+        verify(personLoaderRepository, times(1)).load()
+        verify(personRepository, times(1)).insert(data)
+        verify(personRepository, times(1)).getAll()
 
-        for (index in result.indices) {
-            assertThat(personsViewModel.state.value.persons[index]).isEqualTo(result[index])
-        }
-
+        assertThat(personsViewModel.state.value.persons.size).isEqualTo(2)
         assertThat(personsViewModel.state.value.loading).isFalse()
         assertThat(personsViewModel.state.value.emptyView).isFalse()
         assertThat(personsViewModel.state.value.retry).isFalse()
     }
 
     @Test
-    fun search_persons_event(): Unit = coroutineRule.runBlockingTest {
-        personsViewModel.onStart()
+    fun `search person must update state succeed`(): Unit = coroutineRule.runBlockingTest {
+
+        `when`(personRepository.search(any())).thenReturn(
+            arrayListOf(
+                Person("Tito", "Kling", 26)
+            )
+        )
+
         personsViewModel.event(PersonsEvent.Search("Ti"))
+
+        verify(personRepository, times(1)).search("Ti")
 
         assertThat(personsViewModel.state.value.persons.size).isEqualTo(1)
         assertThat(personsViewModel.state.value.persons[0]).isEqualTo(
@@ -82,10 +106,8 @@ class PersonsViewModelTest {
     }
 
     @Test
-    fun clear_persons_when_view_model_stop(): Unit = coroutineRule.runBlockingTest {
-        personsViewModel.onStart()
+    fun `clear all data when view model stop`(): Unit = coroutineRule.runBlockingTest {
         personsViewModel.onStop()
-
-        assertThat(getAllPersonUseCase()).isEmpty()
+        verify(personRepository, times(1)).clear()
     }
 }

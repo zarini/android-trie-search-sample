@@ -2,6 +2,7 @@ package com.milkyhead.app.androidtriesearchsample.di
 
 import com.google.gson.Gson
 import com.milkyhead.app.androidtriesearchsample.domain.model.Person
+import com.milkyhead.app.trie.DefaultTrie
 import com.milkyhead.app.trie.Trie
 import dagger.Module
 import dagger.Provides
@@ -19,5 +20,5 @@ object AppModule {
     fun provideGson(): Gson = Gson()
 
     @Provides
-    fun providePersonTrieStructure(): Trie<Person> = Trie()
+    fun providePersonTrieStructure(): Trie<Person> = DefaultTrie()
 }

@@ -1,12 +1,13 @@
 package com.milkyhead.app.androidtriesearchsample.domain.usecase
 
 
-import com.google.common.truth.Truth.assertThat
-import com.milkyhead.app.androidtriesearchsample.data.repository.FakePersonLoaderRepository
 import com.milkyhead.app.androidtriesearchsample.domain.repository.PersonLoaderRepository
 import kotlinx.coroutines.runBlocking
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito
+import org.mockito.kotlin.times
+import org.mockito.kotlin.verify
 
 
 class LoadPersonsUseCaseTest {
@@ -17,14 +18,15 @@ class LoadPersonsUseCaseTest {
 
     @Before
     fun setUp() {
-        personLoaderRepository = FakePersonLoaderRepository()
+        personLoaderRepository = Mockito.mock(PersonLoaderRepository::class.java)
         loadPersonUseCase = LoadPersonsUseCase(personLoaderRepository)
     }
 
 
     @Test
-    fun `load persons from loader must return loaded list`(): Unit = runBlocking {
-        assertThat(loadPersonUseCase()).isNotEmpty()
+    fun `load persons from loader must call repository load succeed`(): Unit = runBlocking {
+        loadPersonUseCase()
+        verify(personLoaderRepository, times(1)).load()
     }
 
 }
