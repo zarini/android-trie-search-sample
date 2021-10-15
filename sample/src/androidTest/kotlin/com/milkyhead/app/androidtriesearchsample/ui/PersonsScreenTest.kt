@@ -7,6 +7,7 @@ import androidx.compose.material.Surface
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.filters.SmallTest
@@ -81,6 +82,33 @@ class PersonsScreenTest {
         composeRule.onNodeWithContentDescription("Searchbar").assertExists()
         composeRule.onNodeWithText(context.getString(R.string.empty_message)).assertExists()
         composeRule.onNodeWithText(context.getString(R.string.retry)).assertExists()
+    }
+
+    @Test
+    fun loadEmptyPersonData_retry_mustLoadDataAgain() = runBlockingTest {
+        Mockito.`when`(personLoaderRepository.load()).thenReturn(emptyList())
+        Mockito.`when`(personRepository.insert(any())).thenReturn(false)
+        Mockito.`when`(personRepository.getAll()).thenReturn(emptyList())
+
+        setComposeContent()
+
+        composeRule.onNodeWithContentDescription("Searchbar").assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.empty_message)).assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.retry)).assertExists()
+
+
+        val data = arrayListOf(
+            Person("Tito", "Kling", 26),
+            Person("Karina", "Goldner", 21),
+        )
+        Mockito.`when`(personLoaderRepository.load()).thenReturn(data)
+        Mockito.`when`(personRepository.insert(any())).thenReturn(true)
+        Mockito.`when`(personRepository.getAll()).thenReturn(data)
+
+        composeRule.onNodeWithText(context.getString(R.string.retry)).performClick()
+        composeRule.onNodeWithContentDescription("Searchbar").assertExists()
+        composeRule.onNodeWithText(context.getString(R.string.empty_message)).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.retry)).assertDoesNotExist()
     }
 
     @Test
