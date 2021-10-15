@@ -111,7 +111,8 @@ private fun SearchBarItem(
                 onTextChanged(input)
             },
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .semantics { contentDescription = "SearchTextField" },
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
                 textColor = Color.Black,
@@ -120,7 +121,7 @@ private fun SearchBarItem(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent
-            )
+            ),
         )
     }
 }
@@ -169,7 +170,6 @@ private fun PersonListView(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .semantics { contentDescription = "PersonList" }
     ) {
         items(personsState.persons) {
             PersonItem(person = it, onPersonClicked = onPersonClicked)

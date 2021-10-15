@@ -43,17 +43,17 @@ class PersonsViewModel @Inject constructor(
             }
             is PersonsEvent.Search -> {
                 viewModelScope.launch(dispatcher) {
+                    _state.value = PersonsState(loading = true)
+                    //
+                    // Searching
+                    //
                     val result = searchPersonUseCase(event.query)
-                    _state.value = state.value.copy(
-                        persons = result,
-                        loading = false,
-                        emptyView = result.isEmpty(),
-                        retry = false
-                    )
+                    _state.value = PersonsState(persons = result)
                 }
             }
             is PersonsEvent.SelectPerson -> {
-                val person = event.person
+//                val person = event.person
+                // do some action with person model
             }
         }
     }
@@ -65,16 +65,9 @@ class PersonsViewModel @Inject constructor(
 
             if (loaded) {
                 val result = getAllPersonUseCase()
-                _state.value = state.value.copy(
-                    persons = result,
-                    loading = false,
-                    emptyView = false,
-                )
+                _state.value = PersonsState(persons = result)
             } else {
-                _state.value = PersonsState(
-                    loading = false,
-                    retry = true
-                )
+                _state.value = PersonsState(retry = true)
             }
         }
     }
